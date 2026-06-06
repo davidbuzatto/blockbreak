@@ -31,15 +31,20 @@ Map *createMap( int x, int y, int lines, int columns, int blockSize ) {
             float n = stb_perlin_noise3( nx, ny, 0, 0, 0, 0 );
 
             Color color;
+            int hitsToBreak;
 
             if ( n < -0.3f ) {
                 color = BROWN;
+                hitsToBreak = 1;
             } else if ( n < 0.1f ) {
-                color = ORANGE;
+                color = GREEN;
+                hitsToBreak = 1;
             } else if ( n < 0.5f ) {
                 color = GRAY;
+                hitsToBreak = 2;
             } else {
                 color = DARKGRAY;
+                hitsToBreak = 3;
             }
 
             int p = i * new->columns + j;
@@ -51,6 +56,7 @@ Map *createMap( int x, int y, int lines, int columns, int blockSize ) {
                     new->blockSize
                 },
                 .color = color,
+                .hitsToBreak = hitsToBreak,
                 .broken = false
             };
 
@@ -91,6 +97,13 @@ static void draw( Map *map ) {
 static void drawBlock( Block *block ) {
     if ( !block->broken ) {
         DrawRectangleRec( block->rect, block->color );
+        DrawText( 
+            TextFormat( "%d", block->hitsToBreak ), 
+            block->rect.x + block->rect.width / 2 - 2,
+            block->rect.y + block->rect.height / 2 - 8,
+            20,
+            ColorBrightness( block->color, -0.5f )
+        );
         //DrawRectangleLinesEx( block->rect, 1.0f, BLACK );
     }
 }

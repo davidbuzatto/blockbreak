@@ -9,5 +9,6 @@
 struct Block {
     Rectangle rect;
     Color color;
+    int hitsToBreak;
     bool broken;
 };

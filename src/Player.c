@@ -121,16 +121,16 @@ static void resolveCollisionMapY( Player *player, Map *map ) {
 
 static void input( Player *player, Map *map, Camera2D *camera ) {
 
-    int left = IsKeyDown( KEY_LEFT ) ? -1 : 0;
-    int right = IsKeyDown( KEY_RIGHT ) ? 1 : 0;
+    int left = IsKeyDown( KEY_A ) ? -1 : 0;
+    int right = IsKeyDown( KEY_D ) ? 1 : 0;
     player->vel.x = left * player->walkingSpeed + right * player->walkingSpeed;
 
-    if ( IsKeyPressed( KEY_SPACE ) && player->jumpCount < player->maxJumps ) {
+    if ( IsKeyPressed( KEY_W ) && player->jumpCount < player->maxJumps ) {
         player->vel.y = player->jumpSpeed;
         player->jumpCount++;
     }
 
-    if ( IsMouseButtonDown( MOUSE_BUTTON_LEFT ) ) {
+    if ( IsMouseButtonPressed( MOUSE_BUTTON_LEFT ) || IsMouseButtonDown( MOUSE_BUTTON_RIGHT ) ) {
         for ( int i = 0; i < map->lines; i++ ) {
             for ( int j = 0; j < map->columns; j++ ) {
                 int p = i * map->columns + j;
@@ -138,7 +138,10 @@ static void input( Player *player, Map *map, Camera2D *camera ) {
                 if ( !b->broken ) {
                     Vector2 mousePos = GetScreenToWorld2D( GetMousePosition(), *camera );
                     if ( CheckCollisionPointRec( mousePos, b->rect ) ) {
-                        b->broken = true;
+                        b->hitsToBreak--;
+                        if ( b->hitsToBreak == 0 ) {
+                            b->broken = true;
+                        }
                     }
                 }
             }

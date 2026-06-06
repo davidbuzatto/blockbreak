@@ -74,7 +74,7 @@ void updateGameWorld( GameWorld *gw, float delta ) {
 void drawGameWorld( GameWorld *gw ) {
 
     BeginDrawing();
-    ClearBackground( WHITE );
+    ClearBackground( SKYBLUE );
 
     BeginMode2D( gw->camera );
     gw->map->draw( gw->map );
