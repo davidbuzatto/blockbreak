@@ -2,6 +2,7 @@
 #include <stdbool.h>
 
 #include "raylib/raylib.h"
+#include "stb/stb_perlin.h"
 
 #include "Typedefs.h"
 #include "Block.h"
@@ -20,8 +21,27 @@ Map *createMap( int x, int y, int lines, int columns, int blockSize ) {
     new->blockSize = blockSize;
     new->blocks = (Block*) malloc( sizeof( Block ) * lines * columns );
 
+    float scale = 0.1f;
+
     for ( int i = 0; i < new->lines; i++ ) {
         for ( int j = 0; j < new->columns; j++ ) {
+
+            float nx = j * scale;
+            float ny = i * scale;
+            float n = stb_perlin_noise3( nx, ny, 0, 0, 0, 0 );
+
+            Color color;
+
+            if ( n < -0.3f ) {
+                color = BROWN;
+            } else if ( n < 0.1f ) {
+                color = ORANGE;
+            } else if ( n < 0.5f ) {
+                color = GRAY;
+            } else {
+                color = DARKGRAY;
+            }
+
             int p = i * new->columns + j;
             new->blocks[p] = (Block) {
                 .rect = { 
@@ -30,9 +50,10 @@ Map *createMap( int x, int y, int lines, int columns, int blockSize ) {
                     new->blockSize,
                     new->blockSize
                 },
-                .color = ORANGE,
+                .color = color,
                 .broken = false
             };
+
         }
     }
 

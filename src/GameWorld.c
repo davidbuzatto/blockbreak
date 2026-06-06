@@ -11,6 +11,9 @@
 
 #include "raylib/raylib.h"
 
+#include "stb/stb_perlin.h"
+#define STB_PERLIN_IMPLEMENTATION
+
 #include "Typedefs.h"
 #include "GameWorld.h"
 #include "Map.h"
