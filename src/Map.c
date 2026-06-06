@@ -70,6 +70,6 @@ static void draw( Map *map ) {
 static void drawBlock( Block *block ) {
     if ( !block->broken ) {
         DrawRectangleRec( block->rect, block->color );
-        DrawRectangleLinesEx( block->rect, 1.0f, BLACK );
+        //DrawRectangleLinesEx( block->rect, 1.0f, BLACK );
     }
 }

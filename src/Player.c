@@ -32,8 +32,8 @@ Player *createPlayer( int x, int y, int width, int height, Color color ) {
     new->jumpSpeed = -300;
     new->maxFallSpeed = 600;
 
-    new->jumpCount = 0;
     new->maxJumps = 2;
+    new->jumpCount = new->maxJumps; // prevents jumps during startup
 
     new->input = input;
     new->update = update;

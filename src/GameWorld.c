@@ -46,9 +46,26 @@ void destroyGameWorld( GameWorld *gw ) {
 }
 
 void updateGameWorld( GameWorld *gw, float delta ) {
+
+    Vector2 mouseWheel = GetMouseWheelMoveV();
+
+    if ( mouseWheel.y > 0.0f ) {
+        gw->camera.zoom += 0.1f;
+    } else if ( mouseWheel.y < 0.0f ) {
+        gw->camera.zoom -= 0.1f;
+        if ( gw->camera.zoom <= 0.0f ) {
+            gw->camera.zoom = 0.1f;
+        }
+    }
+
+    if ( IsKeyPressed( KEY_R ) ) {
+        gw->camera.zoom = 1.0f;
+    }
+
     gw->player->input( gw->player, gw->map, &gw->camera );
     gw->player->update( gw->player, gw->map, delta );
     updateCamera( gw );
+
 }
 
 void drawGameWorld( GameWorld *gw ) {
