@@ -32,6 +32,7 @@ Map *createMap( int x, int y, int lines, int columns, int blockSize ) {
 
             Color color;
             int hitsToBreak;
+            bool broken = false;
 
             if ( n < -0.3f ) {
                 color = BROWN;
@@ -39,6 +40,7 @@ Map *createMap( int x, int y, int lines, int columns, int blockSize ) {
             } else if ( n < 0.1f ) {
                 color = GREEN;
                 hitsToBreak = 1;
+                broken = true;
             } else if ( n < 0.5f ) {
                 color = GRAY;
                 hitsToBreak = 2;
@@ -57,7 +59,7 @@ Map *createMap( int x, int y, int lines, int columns, int blockSize ) {
                 },
                 .color = color,
                 .hitsToBreak = hitsToBreak,
-                .broken = false
+                .broken = broken
             };
 
         }

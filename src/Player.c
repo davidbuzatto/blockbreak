@@ -125,7 +125,7 @@ static void input( Player *player, Map *map, Camera2D *camera ) {
     int right = IsKeyDown( KEY_D ) ? 1 : 0;
     player->vel.x = left * player->walkingSpeed + right * player->walkingSpeed;
 
-    if ( IsKeyPressed( KEY_W ) && player->jumpCount < player->maxJumps ) {
+    if ( IsKeyPressed( KEY_SPACE ) && player->jumpCount < player->maxJumps ) {
         player->vel.y = player->jumpSpeed;
         player->jumpCount++;
     }
