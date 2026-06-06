@@ -80,7 +80,7 @@ static void resolveCollisionMapX( Player *player, Map *map ) {
                     } else if ( player->vel.x < 0.0f ) {
                         player->rect.x = b->rect.x + b->rect.width;
                     } else {
-                        // untie for vel.x = 0
+                        // tie resolution for vel.x == 0
                         float playerCenterX = player->rect.x + player->rect.width / 2;
                         float blockCenterX = b->rect.x + b->rect.width / 2;
                         if ( playerCenterX < blockCenterX ) {
