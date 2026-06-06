@@ -7,9 +7,15 @@
  */
 #pragma once
 
-typedef struct GameWorld {
-    int dummy;
-} GameWorld;
+#include "raylib/raylib.h"
+
+#include "Typedefs.h"
+
+struct GameWorld {
+    Player *player;
+    Map *map;
+    Camera2D camera;
+};
 
 /**
  * @brief Creates a dinamically allocated GameWorld struct instance.

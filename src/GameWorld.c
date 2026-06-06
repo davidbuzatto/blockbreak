@@ -7,60 +7,88 @@
  */
 #include <stdio.h>
 #include <stdlib.h>
-
-#include "GameWorld.h"
-#include "ResourceManager.h"
+#include <math.h>
 
 #include "raylib/raylib.h"
-//#include "raylib/raymath.h"
-//#define RAYGUI_IMPLEMENTATION    // to use raygui, comment these three lines.
-//#include "raylib/raygui.h"       // other compilation units must only include
-//#undef RAYGUI_IMPLEMENTATION     // raygui.h
 
-/**
- * @brief Creates a dinamically allocated GameWorld struct instance.
- */
+#include "Typedefs.h"
+#include "GameWorld.h"
+#include "Map.h"
+#include "Player.h"
+#include "ResourceManager.h"
+
+static void updateCamera( GameWorld *gw );
+
 GameWorld *createGameWorld( void ) {
 
     GameWorld *gw = (GameWorld*) malloc( sizeof( GameWorld ) );
 
-    gw->dummy = 0;
+    gw->player = createPlayer( 2000, 100, 30, 50, BLUE );
+    gw->map = createMap( 0, 150, 200, 200, 20 );
+
+    gw->camera = (Camera2D) {
+        .target = { 0 },
+        .offset = { 0 },
+        .rotation = 0.0f,
+        .zoom = 1.0f
+    };
 
     return gw;
 
 }
 
-/**
- * @brief Destroys a GameWindow object and its dependecies.
- */
 void destroyGameWorld( GameWorld *gw ) {
-    free( gw );
+    if ( gw != NULL ) {
+        destroyMap( gw->map );
+        destroyPlayer( gw->player );
+        free( gw );
+    }
 }
 
-/**
- * @brief Reads user input and updates the state of the game.
- */
 void updateGameWorld( GameWorld *gw, float delta ) {
-
+    gw->player->input( gw->player, gw->map, &gw->camera );
+    gw->player->update( gw->player, gw->map, delta );
+    updateCamera( gw );
 }
 
-/**
- * @brief Draws the state of the game.
- */
 void drawGameWorld( GameWorld *gw ) {
 
     BeginDrawing();
     ClearBackground( WHITE );
 
-    const char *text = "Basic game template";
-    Vector2 m = MeasureTextEx( GetFontDefault(), text, 40, 4 );
-    int x = GetScreenWidth() / 2 - m.x / 2;
-    int y = GetScreenHeight() / 2 - m.y / 2;
-    DrawRectangle( x, y, m.x, m.y, BLACK );
-    DrawText( text, x, y, 40, WHITE );
-
-    DrawFPS( 20, 20 );
+    BeginMode2D( gw->camera );
+    gw->map->draw( gw->map );
+    gw->player->draw( gw->player );
+    EndMode2D();
 
     EndDrawing();
+
+}
+
+static void updateCamera( GameWorld *gw ) {
+
+    Player *p = gw->player;
+    Camera2D *c = &gw->camera;
+
+    c->offset.x = GetScreenWidth() / 2;
+    c->offset.y = GetScreenHeight() / 2;
+
+    c->target.x = roundf( p->rect.x + p->rect.width / 2 );
+    c->target.y = roundf( p->rect.y + p->rect.height / 2 );
+
+    // for this game, this does not make sense i think :)
+    /*int minX = GetScreenWidth() / 2;
+    int maxX = calcMapWidth( gw->map ) - minX;
+    int maxY = calcMapHeight( gw->map ) - GetScreenHeight() / 2;
+    
+    if ( c->target.x < minX ) {
+        c->target.x = minX;
+    } else if ( c->target.x > maxX ) {
+        c->target.x = maxX;
+    }
+
+    if ( c->target.y > maxY ) {
+        c->target.y = maxY;
+    }*/
 
 }
