@@ -25,10 +25,10 @@ GameWorld *createGameWorld( void ) {
 
     GameWorld *gw = (GameWorld*) malloc( sizeof( GameWorld ) );
     
-    gw->map = createMap( 0, 150, 600, 600, 20 );
+    gw->map = createMap( 0, 150, 1000, 1000, 20 );
     gw->player = createPlayer( 
         gw->map->columns * gw->map->blockSize / 2, 
-        100, 30, 50, BLUE
+        100, 30, 40, BLUE
     );
 
     gw->camera = (Camera2D) {

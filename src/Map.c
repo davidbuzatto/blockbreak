@@ -35,22 +35,30 @@ Map *createMap( int x, int y, int rows, int columns, int blockSize ) {
             float n = stb_perlin_noise3( nx, ny, 0, 0, 0, 0 );
 
             Color color;
-            int hitsToBreak;
+            int hitsToBreak = 1;
             bool broken = false;
-
-            if ( n < -0.3f ) {
-                color = BROWN;
-                hitsToBreak = 1;
-            } else if ( n < 0.1f ) {
-                color = GREEN;
-                hitsToBreak = 1;
-                broken = true;
-            } else if ( n < 0.5f ) {
-                color = GRAY;
+                        
+            if ( n < -0.60f ) {        // diamond
+                color = WHITE;
+                hitsToBreak = 9;
+            } else if ( n < -0.40f ) { // gold
+                color = GOLD;
                 hitsToBreak = 2;
-            } else {
+            } else if ( n < -0.10f ) { // rock
                 color = DARKGRAY;
-                hitsToBreak = 3;
+                hitsToBreak = 6;
+            } else if ( n < 0.30f ) {  // empty
+                color = GRAY;
+                broken = true;
+            } else if ( n < 0.45f ) {  // mud
+                color = BROWN;
+                hitsToBreak = 2;
+            } else if ( n < 0.70f ) {  // dirt
+                color = DARKBROWN;
+                hitsToBreak = 4;
+            } else {                   // emerald
+                color = LIME;
+                hitsToBreak = 7;
             }
 
             int p = i * new->columns + j;
@@ -93,6 +101,14 @@ int calcMapHeight( Map *map ) {
 static void draw( Map *map, Camera2D *camera ) {
 
     BlockRange range = getVisibleBlocks( map, camera );
+
+    DrawRectangle( 
+        map->pos.x,
+        map->pos.y,
+        calcMapWidth( map ),
+        calcMapHeight( map ),
+        BEIGE
+    );
 
     for ( int i = range.rowMin; i <= range.rowMax; i++ ) {
         for ( int j = range.colMin; j <= range.colMax; j++ ) {
