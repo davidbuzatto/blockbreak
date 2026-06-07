@@ -16,7 +16,7 @@ int main( void ) {
 
     GameWindow *gameWindow = createGameWindow(
         800,             // width
-        450,             // height
+        800,             // height
         "Block Break",   // title
         60,              // target FPS
         true,            // antialiasing

@@ -9,6 +9,7 @@
 #include "Map.h"
 #include "Utils.h"
 
+static void fillMap( Map *map, float scale, float seed );
 static void draw( Map *map, Camera2D *camera );
 static void drawBlock( Block *block );
 
@@ -25,14 +26,38 @@ Map *createMap( int x, int y, int rows, int columns, int blockSize ) {
     new->blockSize = blockSize;
     new->blocks = (Block*) malloc( sizeof( Block ) * new->rows * new->columns );
 
-    float scale = 0.1f;
+    //fillMap( new, 0.1f, 0 );
+    fillMap( new, 0.1f, GetRandomValue( 0, 10000 ) );
 
-    for ( int i = 0; i < new->rows; i++ ) {
-        for ( int j = 0; j < new->columns; j++ ) {
+    new->draw = draw;
+
+    return new;
+
+}
+
+void destroyMap( Map *map ) {
+    if ( map != NULL ) {
+        free( map->blocks );
+        free( map );
+    }
+}
+
+int calcMapWidth( Map *map ) {
+    return map->columns * map->blockSize;
+}
+
+int calcMapHeight( Map *map ) {
+    return map->rows * map->blockSize;
+}
+
+static void fillMap( Map *map, float scale, float seed ) {
+
+    for ( int i = 0; i < map->rows; i++ ) {
+        for ( int j = 0; j < map->columns; j++ ) {
 
             float nx = j * scale;
             float ny = i * scale;
-            float n = stb_perlin_noise3( nx, ny, 0, 0, 0, 0 );
+            float n = stb_perlin_noise3( nx, ny, seed, 0, 0, 0 );
 
             Color color;
             int hitsToBreak = 1;
@@ -61,13 +86,13 @@ Map *createMap( int x, int y, int rows, int columns, int blockSize ) {
                 hitsToBreak = 7;
             }
 
-            int p = i * new->columns + j;
-            new->blocks[p] = (Block) {
+            int p = i * map->columns + j;
+            map->blocks[p] = (Block) {
                 .rect = { 
-                    x + new->blockSize * j, 
-                    y + new->blockSize * i,
-                    new->blockSize,
-                    new->blockSize
+                    map->pos.x + map->blockSize * j, 
+                    map->pos.y + map->blockSize * i,
+                    map->blockSize,
+                    map->blockSize
                 },
                 .color = color,
                 .hitsToBreak = hitsToBreak,
@@ -77,25 +102,6 @@ Map *createMap( int x, int y, int rows, int columns, int blockSize ) {
         }
     }
 
-    new->draw = draw;
-
-    return new;
-
-}
-
-void destroyMap( Map *map ) {
-    if ( map != NULL ) {
-        free( map->blocks );
-        free( map );
-    }
-}
-
-int calcMapWidth( Map *map ) {
-    return map->columns * map->blockSize;
-}
-
-int calcMapHeight( Map *map ) {
-    return map->rows * map->blockSize;
 }
 
 static void draw( Map *map, Camera2D *camera ) {
@@ -122,13 +128,13 @@ static void draw( Map *map, Camera2D *camera ) {
 static void drawBlock( Block *block ) {
     if ( !block->broken ) {
         DrawRectangleRec( block->rect, block->color );
-        DrawText( 
+        /*DrawText( 
             TextFormat( "%d", block->hitsToBreak ), 
             block->rect.x + block->rect.width / 2 - 2,
             block->rect.y + block->rect.height / 2 - 8,
             20,
             ColorBrightness( block->color, -0.5f )
-        );
+        );*/
         //DrawRectangleLinesEx( block->rect, 1.0f, BLACK );
     }
 }
