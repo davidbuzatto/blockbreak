@@ -17,6 +17,9 @@ typedef struct ResourceManager {
     Texture2D terrainsTexture;
     Texture2D cracksTexture;
 
+    Texture2D skyBgTexture;
+    Texture2D caveBgTexture;
+
     //Sound soundExample;
     //Music musicExample;
 

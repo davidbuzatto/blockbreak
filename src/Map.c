@@ -6,6 +6,7 @@
 
 #include "Block.h"
 #include "BlockRange.h"
+#include "Macros.h"
 #include "Map.h"
 #include "ResourceManager.h"
 #include "Utils.h"
@@ -136,6 +137,35 @@ static void draw( Map *map, Camera2D *camera ) {
         calcMapHeight( map ),
         DARKBROWN
     );
+
+    int horReapeats = calcMapWidth( map ) / rm.skyBgTexture.width;
+    int verReapeats = calcMapHeight( map ) / rm.caveBgTexture.height;
+
+    float horParallaxPerc = ( (float) camera->target.x / calcMapWidth( map ) );
+    float verParallaxPerc = ( (float) camera->target.y / calcMapHeight( map ) );
+    float horParallaxSkyDisp = horParallaxPerc * rm.skyBgTexture.width;
+    float horParallaxCaveDisp = horParallaxPerc * rm.skyBgTexture.width * 0.75f;
+    float verParallaxCaveDisp = verParallaxPerc * rm.skyBgTexture.height * 0.75f;
+
+    for ( int i = -1; i <= horReapeats; i++ ) {
+        DrawTexture(
+            rm.skyBgTexture, 
+            map->pos.x + rm.skyBgTexture.width * i + horParallaxSkyDisp, 
+            map->pos.y - rm.skyBgTexture.height + 5, 
+            WHITE
+        );
+    }
+
+    for ( int i = 0; i <= verReapeats; i++ ) {
+        for ( int j = -1; j <= horReapeats; j++ ) {
+            DrawTexture(
+                rm.caveBgTexture, 
+                map->pos.x + rm.skyBgTexture.width * j + horParallaxCaveDisp, 
+                map->pos.y + rm.skyBgTexture.height * i + verParallaxCaveDisp, 
+                WHITE
+            );
+        }
+    }
 
     for ( int i = range.rowMin; i <= range.rowMax; i++ ) {
         for ( int j = range.colMin; j <= range.colMax; j++ ) {

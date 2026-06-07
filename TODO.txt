@@ -1,3 +1,2 @@
-Create background textures;
-Confine player inside the terrain boundaries;
 Make player earn materials;
+Construction;

@@ -76,7 +76,7 @@ void updateGameWorld( GameWorld *gw, float delta ) {
 void drawGameWorld( GameWorld *gw ) {
 
     BeginDrawing();
-    ClearBackground( SKYBLUE );
+    ClearBackground( (Color) { 77, 150, 205, 255 } );
 
     BeginMode2D( gw->camera );
     gw->map->draw( gw->map, &gw->camera );
@@ -97,11 +97,10 @@ static void updateCamera( GameWorld *gw ) {
 
     c->target.x = roundf( p->rect.x + p->rect.width / 2 );
     c->target.y = roundf( p->rect.y + p->rect.height / 2 );
-
-    // for this game, this does not make sense i think :)
-    /*int minX = GetScreenWidth() / 2;
+    
+    int minX = GetScreenWidth() / 2;
     int maxX = calcMapWidth( gw->map ) - minX;
-    int maxY = calcMapHeight( gw->map ) - GetScreenHeight() / 2;
+    int maxY = gw->map->pos.y + calcMapHeight( gw->map ) - GetScreenHeight() / 2;
     
     if ( c->target.x < minX ) {
         c->target.x = minX;
@@ -111,6 +110,6 @@ static void updateCamera( GameWorld *gw ) {
 
     if ( c->target.y > maxY ) {
         c->target.y = maxY;
-    }*/
+    }
 
 }

@@ -17,6 +17,8 @@ static void draw( Player *player );
 
 static void resolveCollisionMapX( Player *player, Map *map );
 static void resolveCollisionMapY( Player *player, Map *map );
+static void resolveCollisionWorldX( Player *player, Map *map );
+static void resolveCollisionWorldY( Player *player, Map *map );
 static void resolveBlockDestruction( Player *player, Map *map, Camera2D *camera );
 
 static bool mouseRightDown = false;
@@ -116,6 +118,7 @@ static void update( Player *player, Map *map, float delta ) {
 
     player->rect.x += player->vel.x * delta;
     resolveCollisionMapX( player, map );
+    resolveCollisionWorldX( player, map );
 
     player->rect.y += player->vel.y * delta;
     player->vel.y += GRAVITY * delta;
@@ -123,6 +126,7 @@ static void update( Player *player, Map *map, float delta ) {
         player->vel.y = player->maxFallSpeed;
     }
     resolveCollisionMapY( player, map );
+    resolveCollisionWorldY( player, map );
 
 }
 
@@ -214,6 +218,24 @@ static void resolveCollisionMapY( Player *player, Map *map ) {
                 }
             }
         }
+    }
+
+}
+
+static void resolveCollisionWorldX( Player *player, Map *map ) {
+
+    if ( player->rect.x < 0 ) {
+        player->rect.x = 0.0f;
+    } else if ( player->rect.x + player->rect.width > calcMapWidth( map ) ) {
+        player->rect.x = calcMapWidth( map ) - player->rect.width;
+    }
+
+}
+
+static void resolveCollisionWorldY( Player *player, Map *map ) {
+
+    if ( player->rect.y + player->rect.height > map->pos.y + calcMapHeight( map ) ) {
+        player->rect.y = map->pos.y + calcMapHeight( map ) - player->rect.height;
     }
 
 }
