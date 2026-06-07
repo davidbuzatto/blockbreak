@@ -4,11 +4,9 @@
 
 #include "raylib/raylib.h"
 
-#include "Typedefs.h"
-
-struct Block {
+typedef struct Block {
     Rectangle rect;
     Color color;
     int hitsToBreak;
     bool broken;
-};
+} Block;

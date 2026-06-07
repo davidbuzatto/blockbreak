@@ -2,21 +2,24 @@
 
 #include "raylib/raylib.h"
 
-#include "Typedefs.h"
+#include "Block.h"
 
+typedef struct Map Map;
 struct Map {
 
-    int lines;
+    Vector2 pos;
+
+    int rows;
     int columns;
 
     int blockSize;
     Block *blocks;
 
-    void (*draw)( Map *map );
+    void (*draw)( Map *map, Camera2D *camera );
 
 };
 
-Map *createMap( int x, int y, int lines, int columns, int blockSize );
+Map *createMap( int x, int y, int rows, int columns, int blockSize );
 void destroyMap( Map *map );
 
 int calcMapWidth( Map *map );

@@ -2,8 +2,9 @@
 
 #include "raylib/raylib.h"
 
-#include "Typedefs.h"
+#include "Map.h"
 
+typedef struct Player Player;
 struct Player {
 
     Rectangle rect;

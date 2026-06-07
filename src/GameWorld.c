@@ -14,7 +14,6 @@
 #include "stb/stb_perlin.h"
 #define STB_PERLIN_IMPLEMENTATION
 
-#include "Typedefs.h"
 #include "GameWorld.h"
 #include "Map.h"
 #include "Player.h"
@@ -25,9 +24,12 @@ static void updateCamera( GameWorld *gw );
 GameWorld *createGameWorld( void ) {
 
     GameWorld *gw = (GameWorld*) malloc( sizeof( GameWorld ) );
-
-    gw->player = createPlayer( 2000, 100, 30, 50, BLUE );
-    gw->map = createMap( 0, 150, 200, 200, 20 );
+    
+    gw->map = createMap( 0, 150, 600, 600, 20 );
+    gw->player = createPlayer( 
+        gw->map->columns * gw->map->blockSize / 2, 
+        100, 30, 50, BLUE
+    );
 
     gw->camera = (Camera2D) {
         .target = { 0 },
@@ -53,11 +55,11 @@ void updateGameWorld( GameWorld *gw, float delta ) {
     Vector2 mouseWheel = GetMouseWheelMoveV();
 
     if ( mouseWheel.y > 0.0f ) {
-        gw->camera.zoom += 0.1f;
+        gw->camera.zoom += 0.01f;
     } else if ( mouseWheel.y < 0.0f ) {
-        gw->camera.zoom -= 0.1f;
-        if ( gw->camera.zoom <= 0.0f ) {
-            gw->camera.zoom = 0.1f;
+        gw->camera.zoom -= 0.01f;
+        if ( gw->camera.zoom <= 0.01f ) {
+            gw->camera.zoom = 0.01f;
         }
     }
 
@@ -77,7 +79,7 @@ void drawGameWorld( GameWorld *gw ) {
     ClearBackground( SKYBLUE );
 
     BeginMode2D( gw->camera );
-    gw->map->draw( gw->map );
+    gw->map->draw( gw->map, &gw->camera );
     gw->player->draw( gw->player );
     EndMode2D();
 

@@ -4,26 +4,30 @@
 #include "raylib/raylib.h"
 #include "stb/stb_perlin.h"
 
-#include "Typedefs.h"
 #include "Block.h"
+#include "BlockRange.h"
 #include "Map.h"
+#include "Utils.h"
 
-static void draw( Map *map );
+static void draw( Map *map, Camera2D *camera );
 static void drawBlock( Block *block );
 
-Map *createMap( int x, int y, int lines, int columns, int blockSize ) {
+Map *createMap( int x, int y, int rows, int columns, int blockSize ) {
 
     Map *new = (Map*) malloc( sizeof( Map ) );
 
-    new->lines = lines;
+    new->pos.x = x;
+    new->pos.y = y;
+
+    new->rows = rows;
     new->columns = columns;
 
     new->blockSize = blockSize;
-    new->blocks = (Block*) malloc( sizeof( Block ) * lines * columns );
+    new->blocks = (Block*) malloc( sizeof( Block ) * new->rows * new->columns );
 
     float scale = 0.1f;
 
-    for ( int i = 0; i < new->lines; i++ ) {
+    for ( int i = 0; i < new->rows; i++ ) {
         for ( int j = 0; j < new->columns; j++ ) {
 
             float nx = j * scale;
@@ -83,12 +87,15 @@ int calcMapWidth( Map *map ) {
 }
 
 int calcMapHeight( Map *map ) {
-    return map->lines * map->blockSize;
+    return map->rows * map->blockSize;
 }
 
-static void draw( Map *map ) {
-    for ( int i = 0; i < map->lines; i++ ) {
-        for ( int j = 0; j < map->columns; j++ ) {
+static void draw( Map *map, Camera2D *camera ) {
+
+    BlockRange range = getVisibleBlocks( map, camera );
+
+    for ( int i = range.rowMin; i <= range.rowMax; i++ ) {
+        for ( int j = range.colMin; j <= range.colMax; j++ ) {
             int p = i * map->columns + j;
             Block *b = &map->blocks[p];
             drawBlock( b );

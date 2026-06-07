@@ -9,13 +9,14 @@
 
 #include "raylib/raylib.h"
 
-#include "Typedefs.h"
+#include "Map.h"
+#include "Player.h"
 
-struct GameWorld {
-    Player *player;
+typedef struct GameWorld {
     Map *map;
+    Player *player;
     Camera2D camera;
-};
+} GameWorld;
 
 /**
  * @brief Creates a dinamically allocated GameWorld struct instance.

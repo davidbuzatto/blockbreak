@@ -3,11 +3,12 @@
 
 #include "raylib/raylib.h"
 
-#include "Macros.h"
-#include "Typedefs.h"
 #include "Block.h"
+#include "BlockRange.h"
+#include "Macros.h"
 #include "Map.h"
 #include "Player.h"
+#include "Utils.h"
 
 static void update( Player *player, Map *map, float delta );
 static void draw( Player *player );
@@ -69,8 +70,10 @@ static void draw( Player *player ) {
 
 static void resolveCollisionMapX( Player *player, Map *map ) {
 
-    for ( int i = 0; i < map->lines; i++ ) {
-        for ( int j = 0; j < map->columns; j++ ) {
+    BlockRange range = getNeighborBlocks( map, player->rect );
+
+    for ( int i = range.rowMin; i <= range.rowMax; i++ ) {
+        for ( int j = range.colMin; j <= range.colMax; j++ ) {
             int p = i * map->columns + j;
             Block *b = &map->blocks[p];
             if ( !b->broken ) {
@@ -99,8 +102,10 @@ static void resolveCollisionMapX( Player *player, Map *map ) {
 
 static void resolveCollisionMapY( Player *player, Map *map ) {
 
-    for ( int i = 0; i < map->lines; i++ ) {
-        for ( int j = 0; j < map->columns; j++ ) {
+    BlockRange range = getNeighborBlocks( map, player->rect );
+
+    for ( int i = range.rowMin; i <= range.rowMax; i++ ) {
+        for ( int j = range.colMin; j <= range.colMax; j++ ) {
             int p = i * map->columns + j;
             Block *b = &map->blocks[p];
             if ( !b->broken ) {
@@ -121,8 +126,8 @@ static void resolveCollisionMapY( Player *player, Map *map ) {
 
 static void input( Player *player, Map *map, Camera2D *camera ) {
 
-    int left = IsKeyDown( KEY_A ) ? -1 : 0;
-    int right = IsKeyDown( KEY_D ) ? 1 : 0;
+    int left = IsKeyDown( KEY_LEFT ) ? -1 : 0;
+    int right = IsKeyDown( KEY_RIGHT ) ? 1 : 0;
     player->vel.x = left * player->walkingSpeed + right * player->walkingSpeed;
 
     if ( IsKeyPressed( KEY_SPACE ) && player->jumpCount < player->maxJumps ) {
@@ -131,8 +136,11 @@ static void input( Player *player, Map *map, Camera2D *camera ) {
     }
 
     if ( IsMouseButtonPressed( MOUSE_BUTTON_LEFT ) || IsMouseButtonDown( MOUSE_BUTTON_RIGHT ) ) {
-        for ( int i = 0; i < map->lines; i++ ) {
-            for ( int j = 0; j < map->columns; j++ ) {
+        
+        BlockRange range = getNeighborBlocks( map, player->rect );
+
+        for ( int i = range.rowMin; i <= range.rowMax; i++ ) {
+            for ( int j = range.colMin; j <= range.colMax; j++ ) {
                 int p = i * map->columns + j;
                 Block *b = &map->blocks[p];
                 if ( !b->broken ) {
