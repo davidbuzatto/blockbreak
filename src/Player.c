@@ -8,6 +8,7 @@
 #include "Macros.h"
 #include "Map.h"
 #include "Player.h"
+#include "ResourceManager.h"
 #include "Utils.h"
 
 static void update( Player *player, Map *map, float delta );
@@ -36,6 +37,19 @@ Player *createPlayer( int x, int y, int width, int height, Color color ) {
     new->maxJumps = 2;
     new->jumpCount = new->maxJumps; // prevents jumps during startup
 
+    new->lookingRight = true;
+
+    new->walkFrameTime = 0.1f;
+    new->walkFrameCounter = 0.0f;
+    new->currentWalkFrame = 0;
+    new->totalWalkFrames = 8;
+
+    new->pickaxePos = (Vector2) { 30, 25 };
+    new->pickaxeStartAngle = 30.0f;
+    new->pickaxeAngle = 0.0f;
+    new->pickaxeAngleVel = 720.0f;
+    new->swingPickaxe = false;
+
     new->input = input;
     new->update = update;
     new->draw = draw;
@@ -50,7 +64,68 @@ void destroyPlayer( Player *player ) {
     }
 }
 
+static void input( Player *player, Map *map, Camera2D *camera ) {
+
+    int left = IsKeyDown( KEY_LEFT ) ? -1 : 0;
+    int right = IsKeyDown( KEY_RIGHT ) ? 1 : 0;
+    player->vel.x = left * player->walkingSpeed + right * player->walkingSpeed;
+
+    if ( IsKeyDown( KEY_LEFT ) ) {
+        player->lookingRight = false;
+    } else if ( IsKeyDown( KEY_RIGHT ) ) {
+        player->lookingRight = true;
+    }
+
+    if ( IsKeyPressed( KEY_SPACE ) && player->jumpCount < player->maxJumps ) {
+        player->vel.y = player->jumpSpeed;
+        player->jumpCount++;
+    }
+
+    if ( IsMouseButtonPressed( MOUSE_BUTTON_LEFT ) || IsMouseButtonDown( MOUSE_BUTTON_RIGHT ) ) {
+        
+        BlockRange range = getNeighborBlocks( map, player->rect );
+        player->pickaxeAngle = 0.0f;
+        player->swingPickaxe = true;
+
+        for ( int i = range.rowMin; i <= range.rowMax; i++ ) {
+            for ( int j = range.colMin; j <= range.colMax; j++ ) {
+                int p = i * map->columns + j;
+                Block *b = &map->blocks[p];
+                if ( !b->broken ) {
+                    Vector2 mousePos = GetScreenToWorld2D( GetMousePosition(), *camera );
+                    if ( CheckCollisionPointRec( mousePos, b->rect ) ) {
+                        b->hits++;
+                        if ( b->hits == b->hitsToBreak ) {
+                            b->broken = true;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+}
+
 static void update( Player *player, Map *map, float delta ) {
+
+    if ( player->vel.x != 0.0f ) {
+        player->walkFrameCounter += delta;
+        if ( player->walkFrameCounter >= player->walkFrameTime ) {
+            player->walkFrameCounter = 0.0f;
+            player->currentWalkFrame++;
+        }
+    } else {
+        player->walkFrameCounter = 0.0f;
+        player->currentWalkFrame = 0;
+    }
+
+    if ( player->swingPickaxe ) {
+        player->pickaxeAngle += player->pickaxeAngleVel * delta;
+        if ( player->pickaxeAngle >= 360.0f ) {
+            player->pickaxeAngle = 0;
+            player->swingPickaxe = false;
+        }
+    }
 
     player->rect.x += player->vel.x * delta;
     resolveCollisionMapX( player, map );
@@ -65,7 +140,39 @@ static void update( Player *player, Map *map, float delta ) {
 }
 
 static void draw( Player *player ) {
-    DrawRectangleRec( player->rect, player->color );
+
+    //DrawRectangleRec( player->rect, player->color );
+
+    DrawTexturePro(
+        rm.playerTexture,
+        (Rectangle) { 
+            32 * ( player->currentWalkFrame % player->totalWalkFrames ),
+            0, 
+            player->lookingRight ? 30 : -30,
+            50
+        },
+        player->rect,
+        (Vector2) { 0 },
+        0.0f,
+        WHITE
+    );
+
+    DrawTexturePro(
+        rm.pickaxeTexture,
+        (Rectangle) { 0, 0, 25, 43 },
+        (Rectangle) { 
+            player->lookingRight ? 
+                (int) ( player->rect.x + player->pickaxePos.x ) :
+                (int) ( player->rect.x + player->rect.width - player->pickaxePos.x ), 
+            player->rect.y + player->pickaxePos.y, 
+            25, 43
+        },
+        (Vector2) { 12, 40 },
+        player->lookingRight ? player->pickaxeAngle + player->pickaxeStartAngle : - ( player->pickaxeAngle + player->pickaxeStartAngle ),
+        WHITE
+    );
+
+
 }
 
 static void resolveCollisionMapX( Player *player, Map *map ) {
@@ -117,40 +224,6 @@ static void resolveCollisionMapY( Player *player, Map *map ) {
                         player->rect.y = b->rect.y + b->rect.height;
                     }
                     player->vel.y = 0;
-                }
-            }
-        }
-    }
-
-}
-
-static void input( Player *player, Map *map, Camera2D *camera ) {
-
-    int left = IsKeyDown( KEY_LEFT ) ? -1 : 0;
-    int right = IsKeyDown( KEY_RIGHT ) ? 1 : 0;
-    player->vel.x = left * player->walkingSpeed + right * player->walkingSpeed;
-
-    if ( IsKeyPressed( KEY_SPACE ) && player->jumpCount < player->maxJumps ) {
-        player->vel.y = player->jumpSpeed;
-        player->jumpCount++;
-    }
-
-    if ( IsMouseButtonPressed( MOUSE_BUTTON_LEFT ) || IsMouseButtonDown( MOUSE_BUTTON_RIGHT ) ) {
-        
-        BlockRange range = getNeighborBlocks( map, player->rect );
-
-        for ( int i = range.rowMin; i <= range.rowMax; i++ ) {
-            for ( int j = range.colMin; j <= range.colMax; j++ ) {
-                int p = i * map->columns + j;
-                Block *b = &map->blocks[p];
-                if ( !b->broken ) {
-                    Vector2 mousePos = GetScreenToWorld2D( GetMousePosition(), *camera );
-                    if ( CheckCollisionPointRec( mousePos, b->rect ) ) {
-                        b->hitsToBreak--;
-                        if ( b->hitsToBreak == 0 ) {
-                            b->broken = true;
-                        }
-                    }
                 }
             }
         }

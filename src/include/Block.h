@@ -9,5 +9,6 @@ typedef struct Block {
     Color color;
     int atlasIndex;
     int hitsToBreak;
+    int hits;
     bool broken;
 } Block;

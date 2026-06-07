@@ -15,9 +15,13 @@ ResourceManager rm = { 0 };
 
 void loadResourcesResourceManager( void ) {
 
+    rm.playerTexture = LoadTexture( "resources/images/player/player.png" );
+    rm.pickaxeTexture = LoadTexture( "resources/images/player/pickaxe.png" );
     rm.terrainsTexture = LoadTexture( "resources/images/terrain/sheet.png" );
     rm.cracksTexture = LoadTexture( "resources/images/terrain/cracks.png" );
 
+    SetTextureFilter( rm.playerTexture, TEXTURE_FILTER_POINT );
+    SetTextureFilter( rm.pickaxeTexture, TEXTURE_FILTER_POINT );
     SetTextureFilter( rm.terrainsTexture, TEXTURE_FILTER_POINT );
     SetTextureFilter( rm.cracksTexture, TEXTURE_FILTER_POINT );
 
@@ -28,10 +32,13 @@ void loadResourcesResourceManager( void ) {
 
 void unloadResourcesResourceManager( void ) {
 
+    UnloadTexture( rm.playerTexture );
+    UnloadTexture( rm.pickaxeTexture );
+
     UnloadTexture( rm.terrainsTexture );
     UnloadTexture( rm.cracksTexture );
 
     //UnloadSound( rm.soundExample );
     //UnloadMusicStream( rm.musicExample );
-    
+
 }

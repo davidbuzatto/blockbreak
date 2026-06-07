@@ -1,8 +1,3 @@
-Improve textures;
-Use crack texture;
 Create background textures;
 Confine player inside the terrain boundaries;
-Create character textures for player;
-Create pickaxe;
 Make player earn materials;
-Improve terrain generation;

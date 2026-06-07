@@ -68,11 +68,11 @@ static void fillMap( Map *map, float scale, float seed ) {
             if ( n < -0.60f ) {        // diamond
                 color = WHITE;
                 atlasIndex = 15;
-                hitsToBreak = 9;
+                hitsToBreak = 10;
             } else if ( n < -0.40f ) { // gold
                 color = GOLD;
                 atlasIndex = 16;
-                hitsToBreak = 2;
+                hitsToBreak = 4;
             } else if ( n < -0.10f ) { // rock
                 color = DARKGRAY;
                 atlasIndex = 7;
@@ -87,7 +87,7 @@ static void fillMap( Map *map, float scale, float seed ) {
             } else if ( n < 0.70f ) {  // dirt
                 color = DARKBROWN;
                 atlasIndex = 4;
-                hitsToBreak = 4;
+                hitsToBreak = 2;
             } else {                   // emerald
                 color = LIME;
                 atlasIndex = 18;
@@ -105,6 +105,7 @@ static void fillMap( Map *map, float scale, float seed ) {
                 .color = color,
                 .atlasIndex = atlasIndex,
                 .hitsToBreak = hitsToBreak,
+                .hits = 0,
                 .broken = broken
             };
 
@@ -117,7 +118,7 @@ static void fillMap( Map *map, float scale, float seed ) {
             int p = i * map->columns + j;
             map->blocks[p].color = GREEN;
             map->blocks[p].atlasIndex = i == 0 ? 1 : 0;
-            map->blocks[p].hitsToBreak = 1;
+            map->blocks[p].hitsToBreak = 2;
             map->blocks[p].broken = false;
         }
     }
@@ -146,7 +147,9 @@ static void draw( Map *map, Camera2D *camera ) {
 }
 
 static void drawBlock( Block *block ) {
+
     if ( !block->broken ) {
+
         //DrawRectangleRec( block->rect, block->color );
         DrawTexturePro( 
             rm.terrainsTexture,
@@ -156,6 +159,34 @@ static void drawBlock( Block *block ) {
             0.0f,
             WHITE
         );
+
+        int hitPercentage = (int) ( (float) block->hits / block->hitsToBreak * 100 );
+
+        int crackRow = 1;
+        int crackColumn = 0;
+        bool drawCrack = true;
+
+        if ( hitPercentage < 25 ) {
+            drawCrack = false;
+        } else if ( hitPercentage >= 25 && hitPercentage < 50 ) {
+            crackColumn = 0;
+        } else if ( hitPercentage >= 50 && hitPercentage < 75 ) {
+            crackColumn = 1;
+        } else if ( hitPercentage >= 75 ) {
+            crackColumn = 2;
+        }
+
+        if ( drawCrack ) {
+            DrawTexturePro( 
+                rm.cracksTexture,
+                (Rectangle) { 22 * crackColumn, 22 * crackRow, 20, 20 },
+                block->rect,
+                (Vector2) { 0 },
+                0.0f,
+                WHITE
+            );
+        }
+
         /*DrawText( 
             TextFormat( "%d", block->hitsToBreak ), 
             block->rect.x + block->rect.width / 2 - 2,
@@ -164,5 +195,6 @@ static void drawBlock( Block *block ) {
             ColorBrightness( block->color, -0.5f )
         );*/
         //DrawRectangleLinesEx( block->rect, 1.0f, BLACK );
+
     }
 }
