@@ -14,13 +14,24 @@
 ResourceManager rm = { 0 };
 
 void loadResourcesResourceManager( void ) {
-    rm.textureExample = LoadTexture( "resources/images/mario.png" );
-    rm.soundExample = LoadSound( "resources/sfx/powerUp.wav" );
-    rm.musicExample = LoadMusicStream( "resources/musics/overworld1.ogg" );
+
+    rm.terrainsTexture = LoadTexture( "resources/images/terrain/sheet.png" );
+    rm.cracksTexture = LoadTexture( "resources/images/terrain/cracks.png" );
+
+    SetTextureFilter( rm.terrainsTexture, TEXTURE_FILTER_POINT );
+    SetTextureFilter( rm.cracksTexture, TEXTURE_FILTER_POINT );
+
+    //rm.soundExample = LoadSound( "resources/sfx/powerUp.wav" );
+    //rm.musicExample = LoadMusicStream( "resources/musics/overworld1.ogg" );
+
 }
 
 void unloadResourcesResourceManager( void ) {
-    UnloadTexture( rm.textureExample );
-    UnloadSound( rm.soundExample );
-    UnloadMusicStream( rm.musicExample );
+
+    UnloadTexture( rm.terrainsTexture );
+    UnloadTexture( rm.cracksTexture );
+
+    //UnloadSound( rm.soundExample );
+    //UnloadMusicStream( rm.musicExample );
+    
 }

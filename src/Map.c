@@ -7,6 +7,7 @@
 #include "Block.h"
 #include "BlockRange.h"
 #include "Map.h"
+#include "ResourceManager.h"
 #include "Utils.h"
 
 static void fillMap( Map *map, float scale, float seed );
@@ -60,29 +61,36 @@ static void fillMap( Map *map, float scale, float seed ) {
             float n = stb_perlin_noise3( nx, ny, seed, 0, 0, 0 );
 
             Color color;
+            int atlasIndex = 0;
             int hitsToBreak = 1;
             bool broken = false;
                         
             if ( n < -0.60f ) {        // diamond
                 color = WHITE;
+                atlasIndex = 15;
                 hitsToBreak = 9;
             } else if ( n < -0.40f ) { // gold
                 color = GOLD;
+                atlasIndex = 16;
                 hitsToBreak = 2;
             } else if ( n < -0.10f ) { // rock
                 color = DARKGRAY;
+                atlasIndex = 7;
                 hitsToBreak = 6;
             } else if ( n < 0.30f ) {  // empty
-                color = GRAY;
+                color = WHITE;
                 broken = true;
             } else if ( n < 0.45f ) {  // mud
                 color = BROWN;
+                atlasIndex = 6;
                 hitsToBreak = 2;
             } else if ( n < 0.70f ) {  // dirt
                 color = DARKBROWN;
+                atlasIndex = 4;
                 hitsToBreak = 4;
             } else {                   // emerald
                 color = LIME;
+                atlasIndex = 18;
                 hitsToBreak = 7;
             }
 
@@ -95,10 +103,22 @@ static void fillMap( Map *map, float scale, float seed ) {
                     map->blockSize
                 },
                 .color = color,
+                .atlasIndex = atlasIndex,
                 .hitsToBreak = hitsToBreak,
                 .broken = broken
             };
 
+        }
+    }
+
+    // redo the first line to generate grass
+    for ( int i = 0; i < 2; i++ ) {
+        for ( int j = 0; j < map->columns; j++ ) {
+            int p = i * map->columns + j;
+            map->blocks[p].color = GREEN;
+            map->blocks[p].atlasIndex = i == 0 ? 1 : 0;
+            map->blocks[p].hitsToBreak = 1;
+            map->blocks[p].broken = false;
         }
     }
 
@@ -113,7 +133,7 @@ static void draw( Map *map, Camera2D *camera ) {
         map->pos.y,
         calcMapWidth( map ),
         calcMapHeight( map ),
-        BEIGE
+        DARKBROWN
     );
 
     for ( int i = range.rowMin; i <= range.rowMax; i++ ) {
@@ -127,7 +147,15 @@ static void draw( Map *map, Camera2D *camera ) {
 
 static void drawBlock( Block *block ) {
     if ( !block->broken ) {
-        DrawRectangleRec( block->rect, block->color );
+        //DrawRectangleRec( block->rect, block->color );
+        DrawTexturePro( 
+            rm.terrainsTexture,
+            (Rectangle) { 0, ( 20 + 2 ) * block->atlasIndex, 20, 20 },
+            block->rect,
+            (Vector2) { 0 },
+            0.0f,
+            WHITE
+        );
         /*DrawText( 
             TextFormat( "%d", block->hitsToBreak ), 
             block->rect.x + block->rect.width / 2 - 2,
