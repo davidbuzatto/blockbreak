@@ -11,13 +11,15 @@
 #include "ResourceManager.h"
 #include "Utils.h"
 
+static void input( Player *player, Map *map, Camera2D *camera );
 static void update( Player *player, Map *map, float delta );
 static void draw( Player *player );
 
 static void resolveCollisionMapX( Player *player, Map *map );
 static void resolveCollisionMapY( Player *player, Map *map );
+static void resolveBlockDestruction( Player *player, Map *map, Camera2D *camera );
 
-static void input( Player *player, Map *map, Camera2D *camera );
+static bool mouseRightDown = false;
 
 Player *createPlayer( int x, int y, int width, int height, Color color ) {
 
@@ -81,27 +83,10 @@ static void input( Player *player, Map *map, Camera2D *camera ) {
         player->jumpCount++;
     }
 
-    if ( IsMouseButtonPressed( MOUSE_BUTTON_LEFT ) || IsMouseButtonDown( MOUSE_BUTTON_RIGHT ) ) {
-        
-        BlockRange range = getNeighborBlocks( map, player->rect );
-        player->pickaxeAngle = 0.0f;
-        player->swingPickaxe = true;
+    mouseRightDown = IsMouseButtonDown( MOUSE_BUTTON_RIGHT );
 
-        for ( int i = range.rowMin; i <= range.rowMax; i++ ) {
-            for ( int j = range.colMin; j <= range.colMax; j++ ) {
-                int p = i * map->columns + j;
-                Block *b = &map->blocks[p];
-                if ( !b->broken ) {
-                    Vector2 mousePos = GetScreenToWorld2D( GetMousePosition(), *camera );
-                    if ( CheckCollisionPointRec( mousePos, b->rect ) ) {
-                        b->hits++;
-                        if ( b->hits == b->hitsToBreak ) {
-                            b->broken = true;
-                        }
-                    }
-                }
-            }
-        }
+    if ( IsMouseButtonPressed( MOUSE_BUTTON_LEFT ) || mouseRightDown ) {
+        resolveBlockDestruction( player, map, camera );
     }
 
 }
@@ -122,8 +107,10 @@ static void update( Player *player, Map *map, float delta ) {
     if ( player->swingPickaxe ) {
         player->pickaxeAngle += player->pickaxeAngleVel * delta;
         if ( player->pickaxeAngle >= 360.0f ) {
-            player->pickaxeAngle = 0;
-            player->swingPickaxe = false;
+            player->pickaxeAngle = 0.0f;
+            if ( !mouseRightDown ) {
+                player->swingPickaxe = false;
+            }
         }
     }
 
@@ -224,6 +211,34 @@ static void resolveCollisionMapY( Player *player, Map *map ) {
                         player->rect.y = b->rect.y + b->rect.height;
                     }
                     player->vel.y = 0;
+                }
+            }
+        }
+    }
+
+}
+
+static void resolveBlockDestruction( Player *player, Map *map, Camera2D *camera ) {
+
+    BlockRange range = getNeighborBlocks( map, player->rect );
+
+    // start pickage swing when pressing with left or right buttons
+    if ( IsMouseButtonPressed( MOUSE_BUTTON_LEFT ) || IsMouseButtonPressed( MOUSE_BUTTON_RIGHT ) ) {
+        player->pickaxeAngle = 0.0f;
+        player->swingPickaxe = true;
+    }
+
+    for ( int i = range.rowMin; i <= range.rowMax; i++ ) {
+        for ( int j = range.colMin; j <= range.colMax; j++ ) {
+            int p = i * map->columns + j;
+            Block *b = &map->blocks[p];
+            if ( !b->broken ) {
+                Vector2 mousePos = GetScreenToWorld2D( GetMousePosition(), *camera );
+                if ( CheckCollisionPointRec( mousePos, b->rect ) ) {
+                    b->hits++;
+                    if ( b->hits == b->hitsToBreak ) {
+                        b->broken = true;
+                    }
                 }
             }
         }
