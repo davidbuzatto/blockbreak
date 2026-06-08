@@ -15,18 +15,19 @@ static void fillMap( Map *map, float scale, float seed );
 static void draw( Map *map, Camera2D *camera );
 static void drawBlock( Block *block );
 
-Map *createMap( int x, int y, int rows, int columns, int blockSize ) {
+Map *createMap( int x, int y, int surfRows, int subtRows, int columns, int blockSize ) {
 
     Map *new = (Map*) malloc( sizeof( Map ) );
 
     new->pos.x = x;
     new->pos.y = y;
 
-    new->rows = rows;
+    new->surfRows = surfRows;
+    new->subtRows = subtRows;
     new->columns = columns;
 
     new->blockSize = blockSize;
-    new->blocks = (Block*) malloc( sizeof( Block ) * new->rows * new->columns );
+    new->blocks = (Block*) malloc( sizeof( Block ) * ( new->surfRows + new->subtRows ) * new->columns );
 
     //fillMap( new, 0.1f, 0 );
     fillMap( new, 0.1f, GetRandomValue( 0, 10000 ) );
@@ -49,12 +50,39 @@ int calcMapWidth( Map *map ) {
 }
 
 int calcMapHeight( Map *map ) {
-    return map->rows * map->blockSize;
+    return ( map->surfRows + map->subtRows ) * map->blockSize;
+}
+
+int calcMapSurfHeight( Map *map ) {
+    return map->surfRows * map->blockSize;
+}
+
+int calcMapSubtHeight( Map *map ) {
+    return map->subtRows * map->blockSize;
 }
 
 static void fillMap( Map *map, float scale, float seed ) {
 
-    for ( int i = 0; i < map->rows; i++ ) {
+    for ( int i = 0; i < map->surfRows; i++ ) {
+        for ( int j = 0; j < map->columns; j++ ) {
+            int p = i * map->columns + j;
+            map->blocks[p] = (Block) {
+                .rect = { 
+                    map->pos.x + map->blockSize * j, 
+                    map->pos.y + map->blockSize * i,
+                    map->blockSize,
+                    map->blockSize
+                },
+                .color = WHITE,
+                .atlasIndex = 0,
+                .hitsToBreak = 0,
+                .hits = 0,
+                .broken = true
+            };
+        }
+    }
+
+    for ( int i = map->surfRows; i < map->surfRows + map->subtRows; i++ ) {
         for ( int j = 0; j < map->columns; j++ ) {
 
             float nx = j * scale;
@@ -113,12 +141,12 @@ static void fillMap( Map *map, float scale, float seed ) {
         }
     }
 
-    // redo the first line to generate grass
-    for ( int i = 0; i < 2; i++ ) {
+    // redo the first two underground rows to generate grass transition
+    for ( int i = map->surfRows; i < map->surfRows + 2; i++ ) {
         for ( int j = 0; j < map->columns; j++ ) {
             int p = i * map->columns + j;
             map->blocks[p].color = GREEN;
-            map->blocks[p].atlasIndex = i == 0 ? 1 : 0;
+            map->blocks[p].atlasIndex = i == map->surfRows ? 1 : 0;
             map->blocks[p].hitsToBreak = 2;
             map->blocks[p].broken = false;
         }
@@ -130,41 +158,41 @@ static void draw( Map *map, Camera2D *camera ) {
 
     BlockRange range = getVisibleBlocks( map, camera );
 
-    DrawRectangle( 
+    /*DrawRectangle( 
         map->pos.x,
-        map->pos.y,
+        map->surfRows * map->blockSize,
         calcMapWidth( map ),
         calcMapHeight( map ),
         DARKBROWN
-    );
+    );*/
 
     int horReapeats = calcMapWidth( map ) / rm.skyBgTexture.width;
-    int verReapeats = calcMapHeight( map ) / rm.caveBgTexture.height;
+    int verReapeats = ( map->subtRows * map->blockSize ) / rm.caveBgTexture.height;
 
     float horParallaxPerc = ( (float) camera->target.x / calcMapWidth( map ) );
     float verParallaxPerc = ( (float) camera->target.y / calcMapHeight( map ) );
     float horParallaxSkyDisp = horParallaxPerc * rm.skyBgTexture.width;
     float horParallaxCaveDisp = horParallaxPerc * rm.skyBgTexture.width * 0.75f;
-    float verParallaxCaveDisp = verParallaxPerc * rm.skyBgTexture.height * 0.75f;
+    float verParallaxCaveDisp = verParallaxPerc * rm.caveBgTexture.height * 0.75f;
+
+    for ( int i = -1; i <= verReapeats; i++ ) {
+        for ( int j = -1; j <= horReapeats; j++ ) {
+            DrawTexture(
+                rm.caveBgTexture, 
+                map->pos.x + rm.caveBgTexture.width * j + horParallaxCaveDisp, 
+                map->surfRows * map->blockSize + ( rm.caveBgTexture.height * i ) + verParallaxCaveDisp, 
+                WHITE
+            );
+        }
+    }
 
     for ( int i = -1; i <= horReapeats; i++ ) {
         DrawTexture(
             rm.skyBgTexture, 
             map->pos.x + rm.skyBgTexture.width * i + horParallaxSkyDisp, 
-            map->pos.y - rm.skyBgTexture.height + 5, 
+            map->surfRows * map->blockSize - rm.skyBgTexture.height, 
             WHITE
         );
-    }
-
-    for ( int i = 0; i <= verReapeats; i++ ) {
-        for ( int j = -1; j <= horReapeats; j++ ) {
-            DrawTexture(
-                rm.caveBgTexture, 
-                map->pos.x + rm.skyBgTexture.width * j + horParallaxCaveDisp, 
-                map->pos.y + rm.skyBgTexture.height * i + verParallaxCaveDisp, 
-                WHITE
-            );
-        }
     }
 
     for ( int i = range.rowMin; i <= range.rowMax; i++ ) {

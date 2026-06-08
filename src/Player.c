@@ -234,7 +234,10 @@ static void resolveCollisionWorldX( Player *player, Map *map ) {
 
 static void resolveCollisionWorldY( Player *player, Map *map ) {
 
-    if ( player->rect.y + player->rect.height > map->pos.y + calcMapHeight( map ) ) {
+    if ( player->rect.y < map->pos.y ) {
+        player->rect.y = map->pos.y;
+        player->vel.y = 0.0f;
+    } else if ( player->rect.y + player->rect.height > map->pos.y + calcMapHeight( map ) ) {
         player->rect.y = map->pos.y + calcMapHeight( map ) - player->rect.height;
     }
 

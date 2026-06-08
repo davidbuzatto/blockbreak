@@ -25,11 +25,11 @@ GameWorld *createGameWorld( void ) {
 
     GameWorld *gw = (GameWorld*) malloc( sizeof( GameWorld ) );
     
-    gw->map = createMap( 0, GetScreenHeight() / 2, 1000, 1000, 20 );
+    gw->map = createMap( 0, 0, 20, 980, 1000, 20 );
 
-    gw->player = createPlayer( 
-        gw->map->columns * gw->map->blockSize / 2, 
-        gw->map->pos.y - 50, 30, 50, BLUE
+    gw->player = createPlayer(
+        gw->map->columns * gw->map->blockSize / 2,
+        gw->map->surfRows * gw->map->blockSize - 50, 30, 50, BLUE
     );
 
     gw->camera = (Camera2D) {

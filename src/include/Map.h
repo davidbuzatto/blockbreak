@@ -9,7 +9,8 @@ struct Map {
 
     Vector2 pos;
 
-    int rows;
+    int surfRows;
+    int subtRows;
     int columns;
 
     int blockSize;
@@ -19,8 +20,10 @@ struct Map {
 
 };
 
-Map *createMap( int x, int y, int rows, int columns, int blockSize );
+Map *createMap( int x, int y, int surfRows, int subtRows, int columns, int blockSize );
 void destroyMap( Map *map );
 
 int calcMapWidth( Map *map );
 int calcMapHeight( Map *map );
+int calcMapSurfHeight( Map *map );
+int calcMapSubtHeight( Map *map );

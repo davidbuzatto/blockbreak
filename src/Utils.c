@@ -41,7 +41,7 @@ static BlockRange clampRange( BlockRange range, Map *map ) {
 
     if ( range.rowMin < 0 ) range.rowMin = 0;
     if ( range.colMin < 0 ) range.colMin = 0;
-    if ( range.rowMax >= map->rows ) range.rowMax = map->rows - 1;
+    if ( range.rowMax >= map->surfRows + map->subtRows ) range.rowMax = map->surfRows + map->subtRows - 1;
     if ( range.colMax >= map->columns ) range.colMax = map->columns - 1;
 
     return range;
