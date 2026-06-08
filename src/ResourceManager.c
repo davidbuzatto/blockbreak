@@ -17,7 +17,7 @@ void loadResourcesResourceManager( void ) {
 
     rm.playerTexture = LoadTexture( "resources/images/player/player.png" );
     rm.pickaxeTexture = LoadTexture( "resources/images/player/pickaxe.png" );
-    rm.terrainsTexture = LoadTexture( "resources/images/terrain/sheet.png" );
+    rm.terrainsTexture = LoadTexture( "resources/images/terrain/tiles.png" );
     rm.cracksTexture = LoadTexture( "resources/images/terrain/cracks.png" );
     rm.skyBgTexture = LoadTexture( "resources/images/bg/sky.png" );
     rm.caveBgTexture = LoadTexture( "resources/images/bg/cave.png" );

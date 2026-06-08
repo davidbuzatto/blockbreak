@@ -1,2 +1,0 @@
-Make player earn materials;
-Construction;

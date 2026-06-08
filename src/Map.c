@@ -77,6 +77,7 @@ static void fillMap( Map *map, float scale, float seed ) {
                 .atlasIndex = 0,
                 .hitsToBreak = 0,
                 .hits = 0,
+                .materialsToAquire = 0,
                 .broken = true
             };
         }
@@ -92,20 +93,24 @@ static void fillMap( Map *map, float scale, float seed ) {
             Color color;
             int atlasIndex = 0;
             int hitsToBreak = 1;
+            int materialsToAquire = 0;
             bool broken = false;
                         
             if ( n < -0.60f ) {        // diamond
                 color = WHITE;
                 atlasIndex = 15;
                 hitsToBreak = 10;
+                materialsToAquire = 100;
             } else if ( n < -0.40f ) { // gold
                 color = GOLD;
                 atlasIndex = 16;
                 hitsToBreak = 4;
+                materialsToAquire = 50;
             } else if ( n < -0.10f ) { // rock
                 color = DARKGRAY;
                 atlasIndex = 7;
                 hitsToBreak = 6;
+                materialsToAquire = 20;
             } else if ( n < 0.30f ) {  // empty
                 color = WHITE;
                 broken = true;
@@ -113,14 +118,17 @@ static void fillMap( Map *map, float scale, float seed ) {
                 color = BROWN;
                 atlasIndex = 6;
                 hitsToBreak = 2;
+                materialsToAquire = 10;
             } else if ( n < 0.70f ) {  // dirt
                 color = DARKBROWN;
                 atlasIndex = 4;
                 hitsToBreak = 2;
+                materialsToAquire = 10;
             } else {                   // emerald
                 color = LIME;
                 atlasIndex = 18;
                 hitsToBreak = 7;
+                materialsToAquire = 80;
             }
 
             int p = i * map->columns + j;
@@ -135,6 +143,7 @@ static void fillMap( Map *map, float scale, float seed ) {
                 .atlasIndex = atlasIndex,
                 .hitsToBreak = hitsToBreak,
                 .hits = 0,
+                .materialsToAquire = materialsToAquire,
                 .broken = broken
             };
 
@@ -148,6 +157,7 @@ static void fillMap( Map *map, float scale, float seed ) {
             map->blocks[p].color = GREEN;
             map->blocks[p].atlasIndex = i == map->surfRows ? 1 : 0;
             map->blocks[p].hitsToBreak = 2;
+            map->blocks[p].materialsToAquire = 1;
             map->blocks[p].broken = false;
         }
     }

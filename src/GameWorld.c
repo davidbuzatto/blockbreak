@@ -19,6 +19,7 @@
 #include "Player.h"
 #include "ResourceManager.h"
 
+static void drawHud( GameWorld *gw );
 static void updateCamera( GameWorld *gw );
 
 GameWorld *createGameWorld( void ) {
@@ -29,7 +30,9 @@ GameWorld *createGameWorld( void ) {
 
     gw->player = createPlayer(
         gw->map->columns * gw->map->blockSize / 2,
-        gw->map->surfRows * gw->map->blockSize - 50, 30, 50, BLUE
+        gw->map->surfRows * gw->map->blockSize - 50, 
+        30, 50, 
+        2000, BLUE
     );
 
     gw->camera = (Camera2D) {
@@ -84,7 +87,18 @@ void drawGameWorld( GameWorld *gw ) {
     gw->player->draw( gw->player );
     EndMode2D();
 
+    drawHud( gw );
+
     EndDrawing();
+
+}
+
+static void drawHud( GameWorld *gw ) {
+
+    const char *text = TextFormat( "Available Materials: %d", gw->player->availableMaterials );
+    int w = MeasureText( text, 20 );
+    DrawRectangle( 10, 10, w + 10, 30, Fade( WHITE, 0.5f ) );
+    DrawText( text, 15, 15, 20, BLACK );
 
 }
 

@@ -31,11 +31,13 @@ struct Player {
     float pickaxeAngleVel;
     bool swingPickaxe;
 
+    int availableMaterials;
+
     void (*input)( Player *player, Map *map, Camera2D *camera );
     void (*update)( Player *player, Map *map, float delta );
     void (*draw)( Player *player );
 
 };
 
-Player *createPlayer( int x, int y, int width, int height, Color color );
+Player *createPlayer( int x, int y, int width, int height, int availableMaterials, Color color );
 void destroyPlayer( Player *player );

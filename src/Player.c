@@ -4,6 +4,7 @@
 #include "raylib/raylib.h"
 
 #include "Block.h"
+#include "BlockOperation.h"
 #include "BlockRange.h"
 #include "Macros.h"
 #include "Map.h"
@@ -19,11 +20,11 @@ static void resolveCollisionMapX( Player *player, Map *map );
 static void resolveCollisionMapY( Player *player, Map *map );
 static void resolveCollisionWorldX( Player *player, Map *map );
 static void resolveCollisionWorldY( Player *player, Map *map );
-static void resolveBlockDestruction( Player *player, Map *map, Camera2D *camera );
+static void resolveBlockOperation( Player *player, Map *map, Camera2D *camera, BlockOperation operation );
 
 static bool mouseRightDown = false;
 
-Player *createPlayer( int x, int y, int width, int height, Color color ) {
+Player *createPlayer( int x, int y, int width, int height, int availableMaterials, Color color ) {
 
     Player *new = (Player*) malloc( sizeof( Player ) );
 
@@ -54,6 +55,8 @@ Player *createPlayer( int x, int y, int width, int height, Color color ) {
     new->pickaxeAngleVel = 720.0f;
     new->swingPickaxe = false;
 
+    new->availableMaterials = availableMaterials;
+
     new->input = input;
     new->update = update;
     new->draw = draw;
@@ -70,13 +73,16 @@ void destroyPlayer( Player *player ) {
 
 static void input( Player *player, Map *map, Camera2D *camera ) {
 
-    int left = IsKeyDown( KEY_LEFT ) ? -1 : 0;
-    int right = IsKeyDown( KEY_RIGHT ) ? 1 : 0;
+    int leftKey = KEY_A;
+    int rightKey = KEY_D;
+
+    int left = IsKeyDown( leftKey ) ? -1 : 0;
+    int right = IsKeyDown( rightKey ) ? 1 : 0;
     player->vel.x = left * player->walkingSpeed + right * player->walkingSpeed;
 
-    if ( IsKeyDown( KEY_LEFT ) ) {
+    if ( IsKeyDown( leftKey ) ) {
         player->lookingRight = false;
-    } else if ( IsKeyDown( KEY_RIGHT ) ) {
+    } else if ( IsKeyDown( rightKey ) ) {
         player->lookingRight = true;
     }
 
@@ -88,7 +94,12 @@ static void input( Player *player, Map *map, Camera2D *camera ) {
     mouseRightDown = IsMouseButtonDown( MOUSE_BUTTON_RIGHT );
 
     if ( IsMouseButtonPressed( MOUSE_BUTTON_LEFT ) || mouseRightDown ) {
-        resolveBlockDestruction( player, map, camera );
+        resolveBlockOperation( 
+            player, 
+            map, 
+            camera,
+            IsKeyDown( KEY_LEFT_CONTROL ) ? BLOCK_OPERATION_BUILD : BLOCK_OPERATION_DESTROY
+        );
     }
 
 }
@@ -243,30 +254,63 @@ static void resolveCollisionWorldY( Player *player, Map *map ) {
 
 }
 
-static void resolveBlockDestruction( Player *player, Map *map, Camera2D *camera ) {
+static void resolveBlockOperation( Player *player, Map *map, Camera2D *camera, BlockOperation operation ) {
 
     BlockRange range = getNeighborBlocks( map, player->rect );
 
-    // start pickage swing when pressing with left or right buttons
-    if ( IsMouseButtonPressed( MOUSE_BUTTON_LEFT ) || IsMouseButtonPressed( MOUSE_BUTTON_RIGHT ) ) {
-        player->pickaxeAngle = 0.0f;
-        player->swingPickaxe = true;
-    }
+    if ( operation == BLOCK_OPERATION_DESTROY ) {
 
-    for ( int i = range.rowMin; i <= range.rowMax; i++ ) {
-        for ( int j = range.colMin; j <= range.colMax; j++ ) {
-            int p = i * map->columns + j;
-            Block *b = &map->blocks[p];
-            if ( !b->broken ) {
-                Vector2 mousePos = GetScreenToWorld2D( GetMousePosition(), *camera );
-                if ( CheckCollisionPointRec( mousePos, b->rect ) ) {
-                    b->hits++;
-                    if ( b->hits == b->hitsToBreak ) {
-                        b->broken = true;
+        // start pickaxe swing when pressing with left or right buttons
+        if ( IsMouseButtonPressed( MOUSE_BUTTON_LEFT ) || IsMouseButtonPressed( MOUSE_BUTTON_RIGHT ) ) {
+            player->pickaxeAngle = 0.0f;
+            player->swingPickaxe = true;
+        }
+
+        for ( int i = range.rowMin; i <= range.rowMax; i++ ) {
+            for ( int j = range.colMin; j <= range.colMax; j++ ) {
+                int p = i * map->columns + j;
+                Block *b = &map->blocks[p];
+                if ( !b->broken ) {
+                    Vector2 mousePos = GetScreenToWorld2D( GetMousePosition(), *camera );
+                    if ( CheckCollisionPointRec( mousePos, b->rect ) ) {
+                        b->hits++;
+                        if ( b->hits == b->hitsToBreak ) {
+                            b->broken = true;
+                            player->availableMaterials += b->materialsToAquire;
+                        }
                     }
                 }
             }
         }
+
+    } else if ( operation == BLOCK_OPERATION_BUILD ) {
+        
+        int materialCost = 10;
+
+        // 10 materials to build
+        if ( player->availableMaterials >= materialCost ) {
+
+            for ( int i = range.rowMin; i <= range.rowMax; i++ ) {
+                for ( int j = range.colMin; j <= range.colMax; j++ ) {
+                    int p = i * map->columns + j;
+                    Block *b = &map->blocks[p];
+                    if ( b->broken ) {
+                        Vector2 mousePos = GetScreenToWorld2D( GetMousePosition(), *camera );
+                        if ( CheckCollisionPointRec( mousePos, b->rect ) ) {
+                            b->color = WHITE;
+                            b->atlasIndex = 10;
+                            b->hitsToBreak = 2;
+                            b->hits = 0;
+                            b->materialsToAquire = 1;
+                            b->broken = false;
+                            player->availableMaterials -= materialCost;
+                        }
+                    }
+                }
+            }
+
+        }
+
     }
 
 }
