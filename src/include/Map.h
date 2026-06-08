@@ -9,8 +9,8 @@ struct Map {
 
     Vector2 pos;
 
-    int surfRows;
-    int subtRows;
+    int surfRows; // surface rows
+    int subtRows; // subterranean rows
     int columns;
 
     int blockSize;
