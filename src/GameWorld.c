@@ -25,10 +25,11 @@ GameWorld *createGameWorld( void ) {
 
     GameWorld *gw = (GameWorld*) malloc( sizeof( GameWorld ) );
     
-    gw->map = createMap( 0, 150, 1000, 1000, 20 );
+    gw->map = createMap( 0, GetScreenHeight() / 2, 1000, 1000, 20 );
+
     gw->player = createPlayer( 
         gw->map->columns * gw->map->blockSize / 2, 
-        100, 30, 50, BLUE
+        gw->map->pos.y - 50, 30, 50, BLUE
     );
 
     gw->camera = (Camera2D) {
@@ -100,6 +101,7 @@ static void updateCamera( GameWorld *gw ) {
     
     int minX = GetScreenWidth() / 2;
     int maxX = calcMapWidth( gw->map ) - minX;
+    int minY = GetScreenHeight() / 2;
     int maxY = gw->map->pos.y + calcMapHeight( gw->map ) - GetScreenHeight() / 2;
     
     if ( c->target.x < minX ) {
@@ -108,7 +110,9 @@ static void updateCamera( GameWorld *gw ) {
         c->target.x = maxX;
     }
 
-    if ( c->target.y > maxY ) {
+    if ( c->target.y < minY ) {
+        c->target.y = minY;
+    } else if ( c->target.y > maxY ) {
         c->target.y = maxY;
     }
 
